@@ -1,7 +1,7 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
 
-import { SocialMediaRoutingModule } from './social-media-routing.module';
+import {SocialMediaRoutingModule} from './social-media-routing.module';
 
 
 @NgModule({
@@ -11,4 +11,5 @@ import { SocialMediaRoutingModule } from './social-media-routing.module';
     SocialMediaRoutingModule
   ]
 })
-export class SocialMediaModule { }
+export class SocialMediaModule {
+}
