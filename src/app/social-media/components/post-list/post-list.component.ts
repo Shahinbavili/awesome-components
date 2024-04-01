@@ -3,6 +3,7 @@ import {Observable} from "rxjs";
 import {Post} from "../../models/post.model";
 import {ActivatedRoute} from "@angular/router";
 import {map} from "rxjs/operators";
+import {PostsService} from "../../services/posts.service";
 
 @Component({
   selector: 'app-post-list',
@@ -13,7 +14,8 @@ export class PostListComponent implements OnInit {
 
   posts$!: Observable<Post[]>;
 
-  constructor(private route: ActivatedRoute) {
+  constructor(private route: ActivatedRoute,
+              private postsService: PostsService) {
   }
 
   ngOnInit(): void {
@@ -22,4 +24,7 @@ export class PostListComponent implements OnInit {
     );
   }
 
+  onNewPostComment(postCommented: { comment: string, postId: number }) {
+    this.postsService.addNewComment(postCommented);
+  }
 }
