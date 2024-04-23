@@ -10,7 +10,7 @@
 <mat-list *ngIf="comments.length">
   <h2 mat-subheader> Commentaires</h2>
   <mat-list-item *ngFor="let comment of comments; let i = index"
-                 [@listItem]="listItemAnimationState[i]"
+                 [@listItem]="animationStates[i]"
                  (mouseenter)="onListItemMouseEnter(i)"
                  (mouseleave)="onListItemMouseLeave(i)">
     <span mat-line>{{ comment.comment }}</span>

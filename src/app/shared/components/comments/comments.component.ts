@@ -35,7 +35,7 @@ export class CommentsComponent implements OnInit {
 
   commentCtrl!: FormControl;
 
-  listItemAnimationState: ('default' | 'active')[] = [];
+  animationStates: { [key: number]: 'default' | 'active' } = {};
 
 
   constructor(private formBuilder: FormBuilder) {
@@ -44,8 +44,8 @@ export class CommentsComponent implements OnInit {
   ngOnInit(): void {
     this.commentCtrl = this.formBuilder.control('',
       [Validators.required, Validators.minLength(10)]);
-    if (this.comments) {
-      this.listItemAnimationState = new Array(this.comments.length).fill('default')
+    for (let index in this.comments) {
+      this.animationStates[index] = 'default';
     }
   }
 
@@ -58,10 +58,10 @@ export class CommentsComponent implements OnInit {
   }
 
   onListItemMouseEnter(index: number) {
-    this.listItemAnimationState[index] = 'active';
+    this.animationStates[index] = 'active';
   }
 
   onListItemMouseLeave(index: number) {
-    this.listItemAnimationState[index] = 'default';
+    this.animationStates[index] = 'default';
   }
 }
