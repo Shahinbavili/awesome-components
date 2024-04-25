@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Comment} from "../../../core/models/comment.model";
 import {FormBuilder, FormControl, Validators} from "@angular/forms";
-import {animate, query, state, style, transition, trigger} from "@angular/animations";
+import {animate, group, query, sequence, state, style, transition, trigger} from "@angular/animations";
 
 @Component({
   selector: 'app-comments',
@@ -20,14 +20,29 @@ import {animate, query, state, style, transition, trigger} from "@angular/animat
         'z-index': 2,
         'border-radius': '10px',
       })),
+      state('deleting', style({
+        transform: 'scale(1.1)',
+        'background-color': 'rgb(255, 77, 77)',
+        'border-radius': '10px',
+      })),
+      state('deleted', style({
+        transform: 'translateX(100%)',
+        opacity: '0',
+      })),
       transition('default => active', [
         animate('100ms ease-in-out')
       ]),
       transition('active => default', [
         animate('500ms ease-in-out')
       ]),
-      transition('void => *', [
-        query('span', [
+      transition('deleting => *', [
+        animate('200ms')
+      ]),
+      transition('* => deleting', [
+        animate('2000ms ease-out')
+      ]),
+      transition(':enter', [
+        query('.comment-text, .comment-date', [
           style({
             opacity: '0',
           })
@@ -42,14 +57,26 @@ import {animate, query, state, style, transition, trigger} from "@angular/animat
           opacity: 1,
           backgroundColor: 'white',
         })),
-        query('span', [
-          style({
-            opacity: 0,
-          }),
-          animate('500ms', style({
-            opacity: 1,
-          }))
-        ])
+        group([
+          sequence([
+            animate('250ms', style({
+              'background-color': 'rgb(255,7,147)'
+            })),
+            animate('250ms', style({
+              'background-color': 'white'
+            })),
+          ]),
+          query('.comment-text', [
+            animate('250ms', style({
+              opacity: 1,
+            })),
+          ]),
+          query('.comment-date', [
+            animate('500ms', style({
+              opacity: 1,
+            })),
+          ]),
+        ]),
       ])
     ])
   ]
