@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {AbstractControl, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Observable} from "rxjs";
 import {map, startWith, tap} from "rxjs/operators";
+import {ComplexFormService} from "../../services/complex-form.service";
 
 @Component({
   selector: 'app-complex-form',
@@ -22,8 +23,10 @@ export class ComplexFormComponent implements OnInit {
   loginInfoForm!: FormGroup;
   showEmailCtrl$!: Observable<boolean>;
   showPhoneCtrl$!: Observable<boolean>;
+  loading = false;
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor(private formBuilder: FormBuilder,
+              private complexFormService: ComplexFormService) {
   }
 
   ngOnInit(): void {
@@ -68,46 +71,82 @@ export class ComplexFormComponent implements OnInit {
     this.showEmailCtrl$ = this.contactPreferenceCtrl.valueChanges.pipe(
       startWith<string, string>(this.contactPreferenceCtrl.value),
       map(preference => preference === 'email'),
-      tap(showEmailCtrl => {
-        if (showEmailCtrl) {
-          this.emailCtrl.addValidators([
-            Validators.required,
-            Validators.email
-          ]);
-          this.confirmEmailCtrl.addValidators([
-              Validators.required,
-              Validators.email
-            ]
-          )
-        } else {
-          this.emailCtrl.clearValidators();
-          this.confirmEmailCtrl.clearValidators();
-        }
-        this.emailCtrl.updateValueAndValidity();
-        this.confirmEmailCtrl.updateValueAndValidity();
-      })
+      tap(showEmailCtrl => this.setEmailValidators(showEmailCtrl))
     );
     this.showPhoneCtrl$ = this.contactPreferenceCtrl.valueChanges.pipe(
       startWith<string, string>(this.contactPreferenceCtrl.value),
       map(preference => preference === 'phone'),
-      tap(showPhoneCtrl => {
-          if (showPhoneCtrl) {
-            this.phoneCtrl.addValidators([
-              Validators.required,
-              Validators.minLength(10),
-              Validators.maxLength(10)
-            ]);
-          } else {
-            this.phoneCtrl.clearValidators();
-          }
-          this.phoneCtrl.updateValueAndValidity();
-        }
-      )
+      tap(showPhoneCtrl => this.setPhoneValidators(showPhoneCtrl))
     );
   }
 
+  setEmailValidators(showEmailCtrl: boolean) {
+    if (showEmailCtrl) {
+      this.emailCtrl.addValidators([
+        Validators.required,
+        Validators.email
+      ]);
+      this.confirmEmailCtrl.addValidators([
+        Validators.required,
+        Validators.email
+      ]);
+    } else {
+      this.emailCtrl.clearValidators();
+      this.confirmEmailCtrl.clearValidators();
+    }
+    this.emailCtrl.updateValueAndValidity();
+    this.confirmEmailCtrl.updateValueAndValidity();
+  };
+
+  setPhoneValidators(showPhoneCtrl: boolean) {
+    if (showPhoneCtrl) {
+      this.phoneCtrl.addValidators([
+        Validators.required,
+        Validators.minLength(10),
+        Validators.maxLength(10),
+        Validators.pattern('^[0-9]*$')
+      ]);
+    } else {
+      this.phoneCtrl.clearValidators();
+    }
+    this.phoneCtrl.updateValueAndValidity();
+  }
+
+  getFormControlErrorText(ctrl: AbstractControl) {
+    if (ctrl.hasError('required')) {
+      return 'Ce champ esr requis';
+    } else if (ctrl.hasError('email')) {
+      return 'Merci d\'entrer une adresse e-mail valide';
+    } else if (ctrl.hasError('pattern')) {
+      return 'Ce numéro de téléphone doit contenir uniquement des chiffres';
+    } else if (ctrl.hasError('minlength')) {
+      return 'Ce numéro de téléphone ne contient pas assez de chiffres';
+    } else if (ctrl.hasError('maxlength')) {
+      return 'Ce numéro de téléphone contient trop de chiffres';
+    } else {
+      return 'Ce champ contient une erreur';
+    }
+  }
+
   onSubmitForm() {
-    console.log(this.mainForm.value);
+    this.loading = true;
+    this.complexFormService.saveUserInfo(this.mainForm.value).pipe(
+      tap(saved => {
+        this.loading = false;
+        if (saved) {
+          //user saved successfully
+          this.resetForm()
+        } else {
+          //user not saved: error case
+          console.error('Echec de l\'enregistrement')
+        }
+      })
+    ).subscribe();
+  }
+
+  private resetForm() {
+    this.mainForm.reset();
+    this.contactPreferenceCtrl.patchValue('email');
   }
 
 }
