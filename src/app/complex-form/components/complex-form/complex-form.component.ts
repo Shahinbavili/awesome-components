@@ -1,5 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {Observable} from "rxjs";
+import {map, startWith, tap} from "rxjs/operators";
 
 @Component({
   selector: 'app-complex-form',
@@ -18,6 +20,8 @@ export class ComplexFormComponent implements OnInit {
   passwordCtrl!: FormControl;
   confirmPasswordCtrl!: FormControl;
   loginInfoForm!: FormGroup;
+  showEmailCtrl$!: Observable<boolean>;
+  showPhoneCtrl$!: Observable<boolean>;
 
   constructor(private formBuilder: FormBuilder) {
   }
@@ -25,7 +29,7 @@ export class ComplexFormComponent implements OnInit {
   ngOnInit(): void {
     this.initMainControls();
     this.initMainForm();
-
+    this.initFormObservables();
   }
 
   private initMainForm(): void {
@@ -36,10 +40,6 @@ export class ComplexFormComponent implements OnInit {
       phone: this.phoneCtrl,
       loginInfo: this.loginInfoForm
     });
-  }
-
-  onSubmitForm() {
-    console.log(this.mainForm.value);
   }
 
   private initMainControls() {
@@ -62,6 +62,52 @@ export class ComplexFormComponent implements OnInit {
       password: this.passwordCtrl,
       confirmPassword: this.confirmPasswordCtrl,
     })
+  }
+
+  private initFormObservables() {
+    this.showEmailCtrl$ = this.contactPreferenceCtrl.valueChanges.pipe(
+      startWith<string, string>(this.contactPreferenceCtrl.value),
+      map(preference => preference === 'email'),
+      tap(showEmailCtrl => {
+        if (showEmailCtrl) {
+          this.emailCtrl.addValidators([
+            Validators.required,
+            Validators.email
+          ]);
+          this.confirmEmailCtrl.addValidators([
+              Validators.required,
+              Validators.email
+            ]
+          )
+        } else {
+          this.emailCtrl.clearValidators();
+          this.confirmEmailCtrl.clearValidators();
+        }
+        this.emailCtrl.updateValueAndValidity();
+        this.confirmEmailCtrl.updateValueAndValidity();
+      })
+    );
+    this.showPhoneCtrl$ = this.contactPreferenceCtrl.valueChanges.pipe(
+      startWith<string, string>(this.contactPreferenceCtrl.value),
+      map(preference => preference === 'phone'),
+      tap(showPhoneCtrl => {
+          if (showPhoneCtrl) {
+            this.phoneCtrl.addValidators([
+              Validators.required,
+              Validators.minLength(10),
+              Validators.maxLength(10)
+            ]);
+          } else {
+            this.phoneCtrl.clearValidators();
+          }
+          this.phoneCtrl.updateValueAndValidity();
+        }
+      )
+    );
+  }
+
+  onSubmitForm() {
+    console.log(this.mainForm.value);
   }
 
 }
