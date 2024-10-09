@@ -3,6 +3,7 @@ import {AbstractControl, FormBuilder, FormControl, FormGroup, Validators} from "
 import {Observable} from "rxjs";
 import {map, startWith, tap} from "rxjs/operators";
 import {ComplexFormService} from "../../services/complex-form.service";
+import {confirmEqualValidator} from "../../validators/confirm-equal.validator";
 
 @Component({
   selector: 'app-complex-form',
@@ -40,6 +41,7 @@ export class ComplexFormComponent implements OnInit {
       personalInfo: this.personalInfoForm,
       contactPreference: this.contactPreferenceCtrl,
       email: this.emailCtrl,
+      confirm: this.confirmEmailCtrl,
       phone: this.phoneCtrl,
       loginInfo: this.loginInfoForm
     });
@@ -55,7 +57,9 @@ export class ComplexFormComponent implements OnInit {
     this.confirmEmailCtrl = this.formBuilder.control('');
     this.emailForm = this.formBuilder.group({
       email: this.emailCtrl,
-      confirm: this.confirmEmailCtrl,
+      confirm: this.confirmEmailCtrl
+    }, {
+      validators: [confirmEqualValidator('email', 'confirm')]
     });
     this.phoneCtrl = this.formBuilder.control('');
     this.passwordCtrl = this.formBuilder.control('', Validators.required);
@@ -64,6 +68,8 @@ export class ComplexFormComponent implements OnInit {
       userName: ['', Validators.required],
       password: this.passwordCtrl,
       confirmPassword: this.confirmPasswordCtrl,
+    }, {
+      validators: [confirmEqualValidator('password', 'confirmPassword')]
     })
   }
 
