@@ -3,7 +3,7 @@ import {Observable} from "rxjs";
 import {Candidate} from "../../models/candidate.model";
 import {CandidatesService} from "../../services/candidates.service";
 import {ActivatedRoute, Router} from "@angular/router";
-import {switchMap} from "rxjs/operators";
+import {switchMap, take, tap} from "rxjs/operators";
 
 @Component({
   selector: 'app-single-candidate',
@@ -33,11 +33,23 @@ export class SingleCandidateComponent implements OnInit {
   }
 
   onHire() {
-
+    this.candidate$.pipe(
+      take(1),
+      tap(candidate => {
+        this.candidatesService.hireCandidate(candidate.id);
+        this.onGoBack();
+      })
+    ).subscribe();
   }
 
   onRefuse() {
-
+    this.candidate$.pipe(
+      take(1),
+      tap(candidate => {
+        this.candidatesService.refuseCandidate(candidate.id);
+        this.onGoBack();
+      })
+    ).subscribe();
   }
 
   onGoBack() {
